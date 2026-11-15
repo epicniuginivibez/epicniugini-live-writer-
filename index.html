@@ -1,67 +1,141 @@
-<!doctype html>
-<html lang="en">
+
+<!DOCTYPE html>
+<html>
 <head>
-<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Epicniugini Live Writer</title>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
-  *{box-sizing:border-box}
-  body{margin:0;min-height:100vh;background:linear-gradient(145deg,#07162b,#142f49 55%,#241b38);font-family:Arial,sans-serif;color:#fff;display:flex;justify-content:center;padding:22px 14px}
-  .wrap{width:min(680px,100%)}
-  header{text-align:center;margin:8px 0 18px}
-  h1{font-size:clamp(24px,6vw,36px);margin:0 0 6px;letter-spacing:1px}
-  .sub{color:#c6d7e8;font-size:14px}
-  .paper{background:repeating-linear-gradient(to bottom,#fffdf5 0,#fffdf5 35px,#d8e4ef 36px,#fffdf5 37px);color:#172331;border-radius:12px;padding:22px 18px;min-height:360px;box-shadow:0 16px 45px #0008;position:relative;overflow:hidden}
-  .paper:before{content:"";position:absolute;left:42px;top:0;bottom:0;border-left:2px solid #e8a6a6;opacity:.8}
-  .paper h2{font-size:16px;color:#34506a;margin:0 0 18px 40px}
-  #written{margin-left:42px;display:flex;flex-direction:column;gap:0}
-  .name{height:42px;display:flex;align-items:center;font-family:"Segoe Print","Comic Sans MS",cursive;font-size:25px;color:#172331;white-space:nowrap;overflow:hidden}
-  .name span{display:inline-block;clip-path:inset(0 100% 0 0);animation:write 1.5s steps(24,end) forwards}
-  @keyframes write{to{clip-path:inset(0 0 0 0)}}
-  .pen{display:inline-block;margin-left:6px;animation:draw 1.5s ease forwards}
-  @keyframes draw{0%{transform:translate(0,0) rotate(-25deg)}100%{transform:translate(110px,0) rotate(-25deg)}}
-  .controls{background:#10243b;border:1px solid #36516b;border-radius:12px;padding:16px;margin-top:16px}
-  label{display:block;font-size:13px;color:#c6d7e8;margin-bottom:7px}
-  input{width:100%;padding:14px;border-radius:8px;border:1px solid #9db1c4;font-size:16px}
-  button{width:100%;padding:14px;margin-top:10px;border:0;border-radius:8px;background:#e8b64e;color:#1b2430;font-weight:700;font-size:16px}
-  .note{font-size:12px;color:#b9c9d8;line-height:1.5;margin:12px 2px 0}
-  .status{font-size:13px;color:#bde4c7;min-height:18px;margin-top:9px}
+body{margin:0;background:#091a30;color:white;font-family:Arial;text-align:center;padding:15px}
+h1{font-size:27px}
+.paper{background:repeating-linear-gradient(#fffdf5 0px,#fffdf5 39px,#cbd9e8 40px);color:#172331;border-radius:12px;padding:20px;min-height:350px;text-align:left}
+.paper h3{color:#34506a}
+#names{margin-left:20px}
+.name{height:42px;font:25px "Comic Sans MS",cursive;display:flex;align-items:center}
+.name span{overflow:hidden;white-space:nowrap;animation:write 2s steps(25) forwards}
+@keyframes write{from{width:0}to{width:100%}}
+button{width:100%;padding:15px;margin-top:12px;border:0;border-radius:8px;background:#e8b64e;font-weight:bold;font-size:16px}
+#status{font-size:14px;line-height:1.5;margin:15px}
+.note{font-size:12px;color:#c5d2df}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header><h1>EPICNIUGINI VIBEZ</h1><div class="sub">LIVE VIEWER NAME WRITER · VISUAL TEST</div></header>
-  <section class="paper">
-    <h2>Special shout-outs</h2>
-    <div id="written"></div>
-  </section>
-  <section class="controls">
-    <label for="viewer">Enter a viewer's name</label>
-    <input id="viewer" maxlength="28" placeholder="Type a name here" autocomplete="off">
-    <button id="writeBtn">WRITE NAME</button>
-    <div class="status" id="status" aria-live="polite"></div>
-    <p class="note">This is the visual test page. Names are entered manually for now. Automatic YouTube live-chat reading and one-time comment filtering will be connected in a later step.</p>
-  </section>
+<h1>EPICNIUGINI VIBEZ</h1>
+<p>LIVE VIEWER NAME WRITER</p>
+<div class="paper">
+<h3>Special shout-outs</h3>
+<div id="names"></div>
 </div>
+<button id="connect">CONNECT YOUTUBE CHANNEL</button>
+<button id="start" disabled>START READING LIVE CHAT</button>
+<button id="stop" disabled>STOP</button>
+<div id="status">Connect your YouTube channel to begin.</div>
+<p class="note">Read-only YouTube connection. Each viewer's name is written once per page session.</p>
+
 <script>
-const input=document.getElementById('viewer'), list=document.getElementById('written'), status=document.getElementById('status');
-const seen=new Set();
-function writeName(){
-  const name=input.value.trim();
-  if(!name){status.textContent='Please enter a name first.';return;}
-  const key=name.toLocaleLowerCase();
-  if(seen.has(key)){status.textContent='That name has already been written.';input.value='';return;}
-  if(seen.size>=8){status.textContent='Notebook page is full. Refresh to start a new test.';return;}
-  seen.add(key);
-  const line=document.createElement('div');line.className='name';
-  const span=document.createElement('span');span.textContent=name;
-  const pen=document.createElement('span');pen.className='pen';pen.textContent='✍️';
-  line.append(span,pen);list.appendChild(line);
-  status.textContent='Writing: '+name;
-  input.value='';input.focus();
+const CLIENT_ID="657530567971-47avmm2tbri1s3q1bvtp1k7e40k1dfu8.apps.googleusercontent.com";
+const SCOPE="https://www.googleapis.com/auth/youtube.readonly";
+const statusBox=document.getElementById("status");
+const startBtn=document.getElementById("start");
+const stopBtn=document.getElementById("stop");
+let token="",chat="",page="",running=false,timer;
+let seen=new Set(),client;
+
+function say(t){statusBox.textContent=t;}
+
+document.getElementById("connect").onclick=()=>{
+ if(!window.google?.accounts?.oauth2){say("Google sign-in loading. Wait a moment and try again.");return;}
+ client=google.accounts.oauth2.initTokenClient({
+  client_id:CLIENT_ID,
+  scope:SCOPE,
+  callback:r=>{
+   if(r.error){say("Google sign-in failed: "+r.error);return;}
+   token=r.access_token;
+   startBtn.disabled=false;
+   say("YouTube connected! Start your LIVE broadcast, then tap Start Reading Live Chat.");
+  }
+ });
+ client.requestAccessToken({prompt:"consent"});
+};
+
+async function api(path,params){
+ let u=new URL("https://www.googleapis.com/youtube/v3/"+path);
+ Object.entries(params).forEach(([k,v])=>u.searchParams.set(k,v));
+ let r=await fetch(u,{headers:{Authorization:"Bearer "+token}});
+ let d=await r.json();
+ if(!r.ok)throw Error(d.error?.message||"YouTube API error");
+ return d;
 }
-document.getElementById('writeBtn').addEventListener('click',writeName);
-input.addEventListener('keydown',e=>{if(e.key==='Enter')writeName();});
+
+function writeName(name,id){
+ if(!name||seen.has(id||name.toLowerCase()))return;
+ seen.add(id||name.toLowerCase());
+ let line=document.createElement("div");
+ line.className="name";
+ let span=document.createElement("span");
+ span.textContent=name;
+ let pen=document.createElement("span");
+ pen.textContent=" ✍️";
+ line.append(span,pen);
+ document.getElementById("names").append(line);
+}
+
+async function findChat(){
+ let d=await api("liveBroadcasts",{
+  part:"snippet,contentDetails,status",
+  mine:"true",
+  broadcastStatus:"active",
+  maxResults:"10"
+ });
+ let live=(d.items||[]).find(x=>x.snippet?.liveChatId);
+ if(!live)throw Error("No active LIVE chat found. Start your YouTube LIVE broadcast with chat enabled.");
+ return live.snippet.liveChatId;
+}
+
+async function poll(){
+ if(!running)return;
+ try{
+  let p={liveChatId:chat,part:"snippet,authorDetails",maxResults:"200"};
+  if(page)p.pageToken=page;
+  let d=await api("liveChat/messages",p);
+  (d.items||[]).forEach(m=>{
+   if(m.snippet?.type==="textMessageEvent"){
+    writeName(m.authorDetails?.displayName,m.authorDetails?.channelId);
+   }
+  });
+  page=d.nextPageToken||page;
+  say("LIVE CHAT CONNECTED. Unique viewers written: "+seen.size);
+  timer=setTimeout(poll,Math.max(5000,d.pollingIntervalMillis||5000));
+ }catch(e){
+  running=false;
+  startBtn.disabled=false;
+  stopBtn.disabled=true;
+  say("Chat error: "+e.message);
+ }
+}
+
+startBtn.onclick=async()=>{
+ startBtn.disabled=true;
+ say("Looking for your active YouTube LIVE broadcast...");
+ try{
+  chat=await findChat();
+  page="";
+  running=true;
+  stopBtn.disabled=false;
+  poll();
+ }catch(e){
+  startBtn.disabled=false;
+  say(e.message);
+ }
+};
+
+stopBtn.onclick=()=>{
+ running=false;
+ clearTimeout(timer);
+ stopBtn.disabled=true;
+ startBtn.disabled=false;
+ say("Chat reading stopped.");
+};
 </script>
 </body>
 </html>
