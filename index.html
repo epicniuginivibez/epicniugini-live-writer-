@@ -80,17 +80,19 @@ function writeName(name,id){
  document.getElementById("names").append(line);
 }
 
+
 async function findChat(){
  let d=await api("liveBroadcasts",{
   part:"snippet,contentDetails,status",
-  mine:"true",
   broadcastStatus:"active",
+  broadcastType:"all",
   maxResults:"10"
  });
  let live=(d.items||[]).find(x=>x.snippet?.liveChatId);
  if(!live)throw Error("No active LIVE chat found. Start your YouTube LIVE broadcast with chat enabled.");
  return live.snippet.liveChatId;
 }
+ 
 
 async function poll(){
  if(!running)return;
